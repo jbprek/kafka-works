@@ -5,9 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.example</groupId>
-  <artifactId>producer-consumer-simple</artifactId>
+  <artifactId>spring-kafka-samples-boot15</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
+  <name>spring-kafka-samples-boot15</name>
 
    <!--TODO fix sample-01 add samples 2 & 3-->
   <modules>

@@ -10,9 +10,9 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>simple-producer</module>
     <module>yb-producer-application</module>
-
+    <module>yb-streaming-application</module>
+    <module>yb-consumer-application</module>
   </modules>
 
 

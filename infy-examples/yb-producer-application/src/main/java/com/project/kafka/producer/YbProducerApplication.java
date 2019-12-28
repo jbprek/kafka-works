@@ -1,28 +1,33 @@
 
 package com.project.kafka.producer;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Properties;
-import java.util.Scanner;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
 @SpringBootApplication
 @Slf4j
 public class YbProducerApplication implements CommandLineRunner {
 
-    private static final String BOOTSTRAP_SERVERS = "192.168.99.100:9092";
+    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
+    private static final String topicName = "ybtopic";
 
     /*
      * Configure & Create Kafka Producer
@@ -37,31 +42,44 @@ public class YbProducerApplication implements CommandLineRunner {
         return new KafkaProducer<>(propsClickStream);
     }
 
-    public static void main(String[] args) {
-        SpringApplication.run(YbProducerApplication.class, args);
-    }
 
     @Override
     public void run(String... args) {
-		if (args.length < 2) {
-			throw new IllegalStateException("Expecting 2 args, 0 : CSV file name, 1:topicName");
-		}
-    	String topic = args[1];
-        KafkaProducer<String, String> producer = createProducer();
+        if (args.length < 1) {
+            throw new IllegalStateException("Expecting 1 args, 0 : CSV file name");
+        }
+
         String filename = args[0];
 
-        Function<String, String> csvFirstColumn = (csv) ->  csv.split(Pattern.quote(","))[0];
-        Function<String, ProducerRecord<String, String>> mapper = (csv) ->  new ProducerRecord<String, String>(topic, csvFirstColumn.apply(csv), csv );
+        KafkaProducer<String, String> producer = createProducer();
 
+        Function<String, String> csvFirstColumn = (csv) -> csv.split(Pattern.quote(","))[0];
+        Function<String, ProducerRecord<String, String>> mapper = (csv) -> new ProducerRecord<String, String>(topicName, csvFirstColumn.apply(csv), csv);
+        Consumer<ProducerRecord<String, String>> publish = w -> {
+            try {
+                Future<RecordMetadata> future = producer.send(w);
+                RecordMetadata meta = future.get();
+                log.info("Published record:  timestamp - {} partition - {} - offset {} ", meta.timestamp(), meta.partition(), meta.offset());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        };
         try (Stream<String> lines = Files.lines(Paths.get(filename))) {
-            lines.map(csv -> mapper.apply(csv))
-                    .peek(w->log.info("Publish event {} ", w))
-                    .forEach(event->producer.send(event));
+            lines.map(mapper)
+                    .peek(w -> log.info("Publishing record {} ", w))
+                    .forEach(publish);
         } catch (IOException e) {
-            log.error("Failed to process file :"+filename);
+            log.error("Failed to process file :" + filename);
             e.printStackTrace();
         }
 
     }
+
+    public static void main(String[] args) {
+        SpringApplication.run(YbProducerApplication.class, args);
+    }
+
 
 }

@@ -16,11 +16,9 @@
 
 package com.example;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import com.common.Bar2;
+import com.common.Foo2;
 import org.apache.kafka.clients.admin.NewTopic;
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
@@ -36,8 +34,8 @@ import org.springframework.kafka.support.converter.RecordMessageConverter;
 import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 import org.springframework.util.backoff.FixedBackOff;
 
-import com.common.Bar2;
-import com.common.Foo2;
+import java.util.HashMap;
+import java.util.Map;
 
 @SpringBootApplication
 public class Application {
