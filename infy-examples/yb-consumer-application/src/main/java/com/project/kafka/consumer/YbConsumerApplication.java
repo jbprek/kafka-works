@@ -31,7 +31,7 @@ public class YbConsumerApplication implements CommandLineRunner {
 
 
     /*
-     * Configure & Create Kafka Producer
+     * Configure & Create Kafka Producers
      */
     private static KafkaConsumer<String, String> createConsumer(String ... topics){
         Properties consumerProperties = new Properties();
