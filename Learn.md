@@ -1,3 +1,3 @@
 # Learn topics
 ## Confluent Tutorials
-- [Main page - Kafak tutorial](https://kafka-tutorials.confluent.io/(
+- [Main page - Kafka tutorials](https://kafka-tutorials.confluent.io/)
